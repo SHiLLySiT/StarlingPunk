@@ -15,6 +15,7 @@ package com.saia.starlingPunk
 	public class SPEntity extends Sprite
 	{
 		private var _world:SPWorld;
+		private var _active:Boolean;
 		private var _type:String;
 		private var _hitBounds:Rectangle;
 		private var _collidable:Boolean;
@@ -22,6 +23,7 @@ package com.saia.starlingPunk
 		private var _originX:Number;
 		private var _originY:Number;
 		private var _behaviorManager:BehaviorManager;
+		private var _onCameraBuffer:int;
 		
 		// Collision information.
 		private const HITBOX:SPMask = new SPMask;
@@ -31,9 +33,11 @@ package com.saia.starlingPunk
 		public function SPEntity(x:Number = 0, y:Number = 0, type:String = "", mask:SPMask = null) 
 		{
 			_layer = 1;
+			_active = true;
 			_originX = 0;
 			_originY = 0;
 			_collidable = true;
+			_onCameraBuffer = 100;
 			
 			this.x = x;
 			this.y = y;
@@ -54,6 +58,50 @@ package com.saia.starlingPunk
 		//----------
 		//  getters and setters
 		//----------
+		
+		/**
+		 * Buffer size for the onCamera() check
+		 */
+		public function get onCameraBuffer():int { return _onCameraBuffer; }
+		public function set onCameraBuffer(value:int):void { _onCameraBuffer = value; }
+		
+		/**
+		 * If the Entity collides with the camera rectangle.
+		 */
+		public function get onCamera():Boolean
+		{
+			return this.left < SP.camera.x + SP.width + this.onCameraBuffer && this.right > SP.camera.x - this.onCameraBuffer &&
+				this.top < SP.camera.y + SP.height + this.onCameraBuffer && this.bottom > SP.camera.y - this.onCameraBuffer;
+		}
+		
+		/**
+		 * The leftmost position of the Entity's hitbox.
+		 */
+		public function get left():Number { return x - originX; }
+		
+		/**
+		 * The rightmost position of the Entity's hitbox.
+		 */
+		public function get right():Number { return x - originX + width; }
+		
+		/**
+		 * The topmost position of the Entity's hitbox.
+		 */
+		public function get top():Number { return y - originY; }
+		
+		/**
+		 * The bottommost position of the Entity's hitbox.
+		 */
+		public function get bottom():Number { return y - originY + height; }
+		
+		/**
+		 * If the entity should update
+		 */
+		public function get active():Boolean {	return _active; }
+		public function set active(value:Boolean):void 
+		{
+			_active = value;
+		}
 		
 		/**
 		 * The World object this Entity has been added to.
@@ -388,6 +436,9 @@ package com.saia.starlingPunk
 			point = localToGlobal(point);
 			
 			_behaviorManager.update();
+			
+			// stops rendering this entity if off camera
+			visible = onCamera;
 		}
 		
 		/**

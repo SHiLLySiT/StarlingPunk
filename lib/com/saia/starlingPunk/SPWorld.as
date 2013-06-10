@@ -88,11 +88,12 @@ package com.saia.starlingPunk
 		 * addeds the entity to the world, entity will be added on next frame tick
 		 * @param	entity to be added to the world
 		 */
-		public function add(entity:SPEntity):void
+		public function add(entity:SPEntity):SPEntity
 		{
-			if (entity.world) return;
+			if (entity.world) return null;
 			entity.world = this;
 			_addList.push(entity);
+			return entity;
 		}
 		
 		/**
@@ -185,7 +186,10 @@ package com.saia.starlingPunk
 				for (var i:int = 0; i < numEntities; i++) 
 				{
 					entity = entities[i];
-					entity.update();
+					if (entity.active)
+					{
+						entity.update();
+					}
 				}
 			}
 		}

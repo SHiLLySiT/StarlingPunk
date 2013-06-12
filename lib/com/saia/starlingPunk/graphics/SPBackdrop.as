@@ -22,10 +22,10 @@ package com.saia.starlingPunk.graphics
 		private var _delta:Point;
 		
 		/**
-		 * Endless repeating texture that scrolls in relation to the camera. Great for parallax effects.
+		 * Endless repeating texture that scrolls in relation to the camera (e.g. parallax effects)
 		 * @param	texture		Source texture.
-		 * @param	scrollX		Repeat horizontally.
-		 * @param	scrollY		Repeat vertically.
+		 * @param	scrollX		Scroll factor along the x axis, 0.0 follows the camera.
+		 * @param	scrollY		Scroll factor along the y axis, 0.0 follows the camera.
 		 */
 		public function SPBackdrop(texture:*, scrollX:Number = 0.0, scrollY:Number = 0.0) 
 		{
@@ -44,13 +44,35 @@ package com.saia.starlingPunk.graphics
 			_texture.texture.repeat = true;
 			_texture.x = _texture.width * 0.5;
 			_texture.y = _texture.height * 0.5;
-			tile(_texture, 1, 1);
+			
+			if (_texture.width < SP.camera.viewPort.width)
+			{
+				// if the texture is smaller than the camera dimensions
+				// we need to tile the texture accordingly
+				var tileX:Number = SP.camera.viewPort.width / _texture.width;
+				var tileY:Number = SP.camera.viewPort.height / _texture.height;
+				
+				_texture.x = (_texture.width * tileX) * 0.5;
+				_texture.y = (_texture.height * tileY) * 0.5;
+				
+				tile(_texture, tileX, tileY);
+			}
+			else
+			{
+				// if the texture is larger than the camera dimensions
+				// we don't need to tile the texture
+				_texture.x = _texture.width * 0.5;
+				_texture.y = _texture.height * 0.5;
+				
+				tile(_texture, 1, 1);
+			}
+			
 			addChild(_texture);
 			
 			addEventListener(Event.ENTER_FRAME, onEnterFrame);
 		}
 		
-		private function tile(image:Image, vertical:Number, horizontal:Number):void
+		private function tile(image:Image, horizontal:Number, vertical:Number):void
 		{
 			image.setTexCoords(1, new Point(horizontal, 0));
 			image.setTexCoords(2, new Point(0, vertical));
